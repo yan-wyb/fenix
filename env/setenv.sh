@@ -735,6 +735,7 @@ function lunch() {
 	done
 
 	echo2 "\
+
 == ENV CONFIG =======================
 VERSION=$VERSION\
 ${p_// /$'\n'}
@@ -780,7 +781,8 @@ ask_yes_no(){
 
 choose_image_types(){
     ask_yes_no COMPRESS_IMAGE \
-	"Compress image?" N || return 1
+    "Compress image?" N || return 1
+    [ "$INSTALL_TYPE" == "SD-USB" ] && return
     ask_yes_no INSTALL_TYPE_RAW \
 	"Generate RAW image (suitable for dd and krescue usage)?" N || return 1
 }
