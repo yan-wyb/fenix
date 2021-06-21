@@ -61,7 +61,9 @@ sudo="sudo -E"
 echo "[i] FENIX (${0#*/}) BUILD: $BUILD | DL: $DOWNLOAD_PKG_DIR | sudo: $sudo"
 
 ##################################### Configurations ##################################
-MAKE_PARAMS="BUILD_TYPE DOWNLOAD_MIRROR NO_CCACHE COMPRESS_IMAGE INSTALL_TYPE_RAW CLONE_FULL_COMMIT_LOG FORCE_BUILD_KERNEL_DEB"
+MAKE_PARAMS="BUILD_TYPE DOWNLOAD_MIRROR NO_CCACHE COMPRESS_IMAGE INSTALL_TYPE_RAW \
+			 CLONE_FULL_COMMIT_LOG FORCE_BUILD_KERNEL_DEB SKIP_ROOTFS_CACHE_DOWNLOAD \
+			 FORCE_CREATE_ROOTFS_CACHE CREATE_ROOTFS_CACHE_ONLY"
 
 ## Available values
 BUILD_TYPE_VALUES="develop | release"
@@ -71,6 +73,9 @@ COMPRESS_IMAGE_VALUES="no | yes"
 INSTALL_TYPE_RAW_VALUES="no | yes"
 CLONE_FULL_COMMIT_LOG_VALUES="no | yes"
 FORCE_BUILD_KERNEL_DEB_VALUES="no | yes"
+SKIP_ROOTFS_CACHE_DOWNLOAD_VALUES="no | yes"
+FORCE_CREATE_ROOTFS_CACHE_VALUES="no | yes"
+CREATE_ROOTFS_CACHE_ONLY_VALUES="no | yes"
 
 ## Default values
 [[ -z $NO_CCACHE ]] && NO_CCACHE=no
@@ -80,15 +85,17 @@ FORCE_BUILD_KERNEL_DEB_VALUES="no | yes"
 [[ -z $INSTALL_TYPE_RAW ]] && INSTALL_TYPE_RAW=no
 [[ -z $CLONE_FULL_COMMIT_LOG ]] && CLONE_FULL_COMMIT_LOG=no
 [[ -z $FORCE_BUILD_KERNEL_DEB ]] && FORCE_BUILD_KERNEL_DEB=no
+[[ -z $SKIP_ROOTFS_CACHE_DOWNLOAD ]] && SKIP_ROOTFS_CACHE_DOWNLOAD=no
+[[ -z $FORCE_CREATE_ROOTFS_CACHE ]] && FORCE_CREATE_ROOTFS_CACHE=no
+[[ -z $CREATE_ROOTFS_CACHE_ONLY ]] && CREATE_ROOTFS_CACHE_ONLY=no
 
 
+GITHUB_URL="https://github.com"
+GITEE_URL="https://gitee.com"
 FENIX_BRANCH="master"
-## U-boot & Linux GitHub URL
-LINUX_SOURCE_URL="https://github.com/khadas/linux"
-UBOOT_SOURCE_URL="https://github.com/khadas/u-boot"
 [[ "$CLONE_FULL_COMMIT_LOG" == "no" ]] && GIT_CLONE_OPTIONS="--depth=1"
 
-ROOTFSCACHE_VERSION=6
+ROOTFSCACHE_VERSION=7
 DATE=$(date +%F | sed 's/-//g')
 IMAGE_VERSION="V${VERSION}-${DATE:2}"
 [[ "$BUILD_TYPE" != "release" ]] && IMAGE_VERSION=${IMAGE_VERSION}-develop
@@ -321,7 +328,7 @@ case $DISTRIB_RELEASE in
 	;;
 	focal)
 		DEBOOTSTRAP_COMPONENTS="main,universe"
-		[[ "$DISTRIB_TYPE" != "minimal" ]] && PACKAGE_LIST_RELEASE="man-db kbd gnupg2 dirmngr networkd-dispatcher libjpeg9"
+		[[ "$DISTRIB_TYPE" != "minimal" ]] && PACKAGE_LIST_RELEASE="man-db kbd gnupg2 dirmngr networkd-dispatcher libjpeg9 command-not-found"
 		PACKAGE_LIST_KODI="mesa-utils libglu1 libpcrecpp0v5 libssh-4 libtag1v5 libtinyxml2.6.2v5 libcurl4 libcrossguid0  libmicrohttpd12 libavahi-compat-libdnssd-dev libcec4 \
 			libfstrcmp0 libnfs13 fonts-liberation python-bluez python-pil python-simplejson libaacs0 fonts-dejavu-core libao-dev libpython2.7 libpython2.7-minimal libpython2.7-stdlib x11-utils"
 		PACKAGE_LIST_SERVER_KODI="libao4 libwayland-cursor0 libavahi-compat-libdnssd-dev libass9 libavahi-client3 libavahi-common3 libbluray2 libcdio18 libcec4 \
@@ -336,10 +343,20 @@ esac
 
 DEBIAN_MIRROR='httpredir.debian.org/debian'
 UBUNTU_MIRROR='ports.ubuntu.com/'
+ROOTFS_CACHE_URL="http://build.khadas.com/khadas/fenix/cache/rootfs"
+
+## U-boot & Linux GitHub URL
+LINUX_SOURCE_URL="https://github.com/khadas/linux"
+UBOOT_SOURCE_URL="https://github.com/khadas/u-boot"
 
 if [[ $DOWNLOAD_MIRROR == china ]] ; then
 	DEBIAN_MIRROR='mirrors.tuna.tsinghua.edu.cn/debian'
 	UBUNTU_MIRROR='mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/'
+	ROOTFS_CACHE_URL="http://build.khadas.com/khadas/fenix/cache/rootfs"
+
+	## U-boot & Linux Gitee URL
+	LINUX_SOURCE_URL="https://gitee.com/khadas/linux"
+	UBOOT_SOURCE_URL="https://gitee.com/khadas/u-boot"
 fi
 
 # apt-cacher-ng mirror configurarion
